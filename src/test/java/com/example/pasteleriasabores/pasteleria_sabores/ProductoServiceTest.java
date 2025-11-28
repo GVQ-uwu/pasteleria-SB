@@ -1,4 +1,4 @@
-package com.example.pasteleriasabores;
+package com.example.pasteleriasabores.pasteleria_sabores;
 
 import com.example.pasteleriasabores.pasteleria_sabores.model.Producto;
 import com.example.pasteleriasabores.pasteleria_sabores.service.ProductoService;
@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(classes = PasteleriaSaboresApplication.class)
 public class ProductoServiceTest {
 
     @Autowired
