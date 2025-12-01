@@ -1,68 +1,80 @@
 package com.example.pasteleriasabores.pasteleria_sabores.controller;
 
-import java.util.List;
-
+import com.example.pasteleriasabores.pasteleria_sabores.model.Producto;
+import com.example.pasteleriasabores.pasteleria_sabores.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import com.example.pasteleriasabores.pasteleria_sabores.model.Producto;
-import com.example.pasteleriasabores.pasteleria_sabores.service.ProductoService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "http://localhost:3000")  // Para permitir React
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProductoController {
-
+    
     @Autowired
-    private ProductoService productoService;
-
-    // ------------------------------
-    // LISTAR (USER + ADMIN)
-    // ------------------------------
+    private ProductoRepository productoRepository;
+    
+    // 1. Todos los productos
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<Producto>> obtenerProductos() {
-        List<Producto> productos = productoService.getAllProductos();
+    public ResponseEntity<List<Producto>> getAllProductos() {
+        return ResponseEntity.ok(productoRepository.findAll());
+    }
+    
+    // 2. Producto por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Producto> getProductoById(@PathVariable Long id) {
+        return productoRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // 3. Productos por categoría (NUEVO)
+    @GetMapping("/categoria/{categoria}")
+    public ResponseEntity<List<Producto>> getProductosByCategoria(@PathVariable String categoria) {
+        List<Producto> productos = productoRepository.findByCategoria(categoria);
         return ResponseEntity.ok(productos);
     }
-
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<Producto> obtenerProducto(@PathVariable("id") Long id) {
-        Producto producto = productoService.getProductoById(id);
-        if (producto == null) {
+    
+    // 4. Productos destacados (NUEVO)
+    @GetMapping("/destacados")
+    public ResponseEntity<List<Producto>> getProductosDestacados() {
+        List<Producto> productos = productoRepository.findByDestacadoTrue();
+        return ResponseEntity.ok(productos);
+    }
+    
+    // 5. Productos en oferta (NUEVO)
+    @GetMapping("/ofertas")
+    public ResponseEntity<List<Producto>> getProductosOferta() {
+        List<Producto> productos = productoRepository.findByOfertaTrue();
+        return ResponseEntity.ok(productos);
+    }
+    
+    // 6. Crear producto
+    @PostMapping
+    public ResponseEntity<Producto> createProducto(@RequestBody Producto producto) {
+        Producto saved = productoRepository.save(producto);
+        return ResponseEntity.ok(saved);
+    }
+    
+    // 7. Actualizar producto
+    @PutMapping("/{id}")
+    public ResponseEntity<Producto> updateProducto(@PathVariable Long id, @RequestBody Producto producto) {
+        if (!productoRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(producto);
+        producto.setId(id);
+        Producto updated = productoRepository.save(producto);
+        return ResponseEntity.ok(updated);
     }
-
-    // ------------------------------
-    // CREAR (SOLO ADMIN)
-    // ------------------------------
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
-        Producto nuevoProducto = productoService.createProducto(producto);
-        return ResponseEntity.ok(nuevoProducto);
-    }
-
-    // ------------------------------
-    // ACTUALIZAR (SOLO ADMIN)
-    // ------------------------------
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Producto actualizarProducto(@PathVariable Long id, @RequestBody Producto productoDetails) {
-        return productoService.updateProducto(id, productoDetails);
-    }
-
-    // ------------------------------
-    // ELIMINAR (SOLO ADMIN)
-    // ------------------------------
+    
+    // 8. Eliminar producto
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public void eliminarProducto(@PathVariable Long id) {
-        productoService.deleteProducto(id);
+    public ResponseEntity<Void> deleteProducto(@PathVariable Long id) {
+        if (!productoRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        productoRepository.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }

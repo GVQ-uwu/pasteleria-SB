@@ -37,7 +37,7 @@ public class Usuario {
     private String fechaNacimiento;
     
     @Column(nullable = false, length = 20)
-    private String rol = "cliente"; // cliente, admin, moderador
+    private String rol; // cliente, admin, moderador
     
     @Column(nullable = false, length = 20)
     private String estado = "activo"; // activo, inactivo, bloqueado
@@ -47,4 +47,21 @@ public class Usuario {
     
     @Column(name = "ultimo_acceso")
     private LocalDateTime ultimoAcceso;
+
+    @Column(name = "rol")
+    
+    public void setEmail(String email) {
+        this.email = email;
+        // Asignar rol automáticamente basado en email
+        if (email != null) {
+            String emailLower = email.toLowerCase();
+            if (emailLower.endsWith("@admin.com")) {
+                this.rol = "ADMIN";
+            } else if (emailLower.endsWith("@test.com")) {
+                this.rol = "TEST";
+            } else {
+                this.rol = "CLIENTE";
+            }
+        }
+    }
 }

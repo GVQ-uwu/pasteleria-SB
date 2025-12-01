@@ -2,31 +2,62 @@ package com.example.pasteleriasabores.pasteleria_sabores.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "productos")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Producto {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String sku;
+    
+    @Column(nullable = false, length = 200)
     private String nombre;
-    private String categoria;     // categoriaId del frontend se enviará aquí
-    private String imagen;        // img del frontend
-
+    
+    @Column(length = 100)
+    private String categoria;
+    
     @Column(columnDefinition = "TEXT")
-    private String descripcion;   // desc del frontend
-    private Integer stock;        // stock real
+    private String descripcion;
+    
+    @Column(nullable = false)
+    private Boolean destacado = false;
+    
+    @Column(length = 500)
+    private String imagen;
+    
+    @Column(nullable = false)
+    private Boolean oferta = false;
+    
+    @Column(nullable = false)
     private Double precio;
-    private Boolean destacado;
-    private Boolean oferta;
-    private String tipo;          // circular, cuadrada, unit, etc
-    private String tamano;        // mediana, grande, unit
+    
+    @Column(length = 50)
+    private String sku;
+    
+    @Column(nullable = false)
+    private Integer stock = 0;
+    
+    @Column(length = 50)
+    private String tamano;
+    
+    @Column(length = 50)
+    private String tipo;
+    
+    @Column(nullable = false)
+    private Boolean disponible = true;
+    
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
+    
+    @PrePersist
+    protected void onCreate() {
+        if (fechaCreacion == null) {
+            fechaCreacion = LocalDateTime.now();
+        }
+        if (disponible == null) {
+            disponible = true;
+        }
+    }
 }
