@@ -60,7 +60,7 @@ public class SecurityConfig {
                         // ⭐ Swagger permitido
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        // ⭐ Todo lo demás requiere autenticación
+                        // ⭐ Todo lo demás requiere autenticaciónn
                         .anyRequest().authenticated());
 
         // ⭐ ACTIVAR JWT
