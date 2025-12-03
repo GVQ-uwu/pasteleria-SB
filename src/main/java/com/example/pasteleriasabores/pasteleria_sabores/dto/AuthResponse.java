@@ -1,6 +1,5 @@
 package com.example.pasteleriasabores.pasteleria_sabores.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
