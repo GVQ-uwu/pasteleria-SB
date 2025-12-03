@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -29,31 +30,40 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
+                                   HttpServletResponse response,
+                                   FilterChain filterChain)
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
+
             String token = header.substring(7);
 
-            if (jwtUtil.validarToken(token)) {
+            // 1. EXTRAER EMAIL DESDE JWT
+            String email = jwtUtil.extraerEmail(token);
 
-                String email = jwtUtil.obtenerEmail(token);
-                String rol = jwtUtil.obtenerRol(token);
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+                // 2. VALIDAR TOKEN
+                if (jwtUtil.validarToken(token, email)) {
 
-                if (usuario != null) {
-                    // En tu JwtFilter - DEBE MANTENERSE ASÍ
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            usuario.getEmail(),
-                            null,
-                            java.util.List.of(new SimpleGrantedAuthority("ROLE_" + rol)) // ✅ "ROLE_" + rol
-                    );
+                    // 3. OBTENER ROL DEL JWT
+                    String rol = jwtUtil.extraerRol(token); // ADMIN / CLIENTE / TEST
+
+                    // 4. CREAR AUTHORITIES CORRECTAS (SIN ROLE_)
+                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority(rol);
+
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    List.of(authority)
+                            );
 
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    // 5. REGISTRAR AUTENTICACIÓN
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }

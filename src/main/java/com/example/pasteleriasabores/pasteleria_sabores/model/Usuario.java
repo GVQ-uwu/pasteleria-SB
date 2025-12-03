@@ -58,9 +58,9 @@ public class Usuario {
             if (emailLower.endsWith("@admin.com")) {
                 this.rol = "ADMIN";
             } else if (emailLower.endsWith("@test.com")) {
-                this.rol = "TEST";
+                this.rol = "TEST"; 
             } else {
-                this.rol = "CLIENTE";
+                this.rol = "USER";
             }
         }
     }
