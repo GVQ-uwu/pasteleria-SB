@@ -1,6 +1,5 @@
 package com.example.pasteleriasabores.pasteleria_sabores.security;
 
-import com.example.pasteleriasabores.pasteleria_sabores.model.Usuario;
 import com.example.pasteleriasabores.pasteleria_sabores.repository.UsuarioRepository;
 
 import jakarta.servlet.FilterChain;
