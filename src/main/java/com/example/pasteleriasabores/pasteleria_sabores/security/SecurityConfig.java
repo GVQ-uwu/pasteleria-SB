@@ -31,7 +31,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -54,15 +53,16 @@ public class SecurityConfig {
                         // ⭐ RUTAS PROTEGIDAS
                         .requestMatchers("/api/usuarios/perfil/**").authenticated()
                         .requestMatchers("/api/pedidos/perfil/**").authenticated()
+                        .requestMatchers("/api/pedidos/mis-pedidos", "/api/pedidos/crear").authenticated()
 
                         // ⭐ SOLO ADMIN
                         .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/pedidos/todos", "/api/pedidos/*/estado").hasAuthority("ADMIN")
 
                         // Swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated());
 
         // ⭐ ACTIVAR JWT
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

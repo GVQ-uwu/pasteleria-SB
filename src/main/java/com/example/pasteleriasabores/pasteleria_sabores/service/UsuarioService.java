@@ -18,10 +18,9 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-        
+
     @Autowired // ✅ INYECTAR PASSWORD ENCODER
     private PasswordEncoder passwordEncoder;
-
 
     // Convertir Usuario a UsuarioResponse (sin password)
     private UsuarioResponse toUsuarioResponse(Usuario usuario) {
@@ -42,7 +41,8 @@ public class UsuarioService {
     // Autenticar usuario CORREGIDO
     public Optional<UsuarioResponse> authenticate(String email, String password) {
         return usuarioRepository.findByEmail(email)
-                .filter(user -> passwordEncoder.matches(password, user.getPassword()) && "activo".equals(user.getEstado())) // ✅ COMPARAR CON HASH
+                .filter(user -> passwordEncoder.matches(password, user.getPassword())
+                        && "activo".equals(user.getEstado())) // ✅ COMPARAR CON HASH
                 .map(user -> {
                     // Actualizar último acceso
                     user.setUltimoAcceso(LocalDateTime.now());
@@ -50,13 +50,14 @@ public class UsuarioService {
                     return toUsuarioResponse(user);
                 });
     }
-    
-    // Registrar nuevo usuario - ELIMINAR DUPLICADO DE HASH (ya se hace en controller)
+
+    // Registrar nuevo usuario - ELIMINAR DUPLICADO DE HASH (ya se hace en
+    // controller)
     public UsuarioResponse register(Usuario usuario) {
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
         }
-        
+
         // Asegurar valores por defecto
         if (usuario.getRol() == null) {
             usuario.setRol("cliente");
@@ -67,12 +68,12 @@ public class UsuarioService {
         if (usuario.getFechaRegistro() == null) {
             usuario.setFechaRegistro(LocalDateTime.now());
         }
-        
+
         // ✅ LA CONTRASEÑA YA VIENE HASHEDA DEL CONTROLLER
         Usuario savedUser = usuarioRepository.save(usuario);
         return toUsuarioResponse(savedUser);
     }
-    
+
     // Obtener todos los usuarios
     public List<UsuarioResponse> findAll() {
         return usuarioRepository.findAll().stream()
@@ -81,9 +82,10 @@ public class UsuarioService {
     }
 
     // Obtener usuario por ID
-    public Optional<UsuarioResponse> findById(Long id) {
-        return usuarioRepository.findById(id)
-                .map(this::toUsuarioResponse);
+    public Long obtenerIdPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .map(Usuario::getId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
     }
 
     // Obtener usuario por email
@@ -138,21 +140,20 @@ public class UsuarioService {
         return toUsuarioResponse(updatedUser);
     }
 
-    
     // Cambiar contraseña CORREGIDO
     public void changePassword(Long id, String currentPassword, String newPassword) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
-        
+
         // ✅ COMPARAR CON HASH
         if (!passwordEncoder.matches(currentPassword, usuario.getPassword())) {
             throw new RuntimeException("La contraseña actual es incorrecta");
         }
-        
+
         if (newPassword.length() < 6) {
             throw new RuntimeException("La nueva contraseña debe tener al menos 6 caracteres");
         }
-        
+
         // ✅ HASH DE NUEVA CONTRASEÑA
         usuario.setPassword(passwordEncoder.encode(newPassword));
         usuarioRepository.save(usuario);
@@ -188,19 +189,18 @@ public class UsuarioService {
 
     // Actualizar perfil por email
     public UsuarioResponse updateProfileByEmail(String email, Usuario datos) {
-    Usuario usuario = usuarioRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    usuario.setNombre(datos.getNombre());
-    usuario.setTelefono(datos.getTelefono());
-    usuario.setDireccion(datos.getDireccion());
-    usuario.setFechaNacimiento(datos.getFechaNacimiento());
+        usuario.setNombre(datos.getNombre());
+        usuario.setTelefono(datos.getTelefono());
+        usuario.setDireccion(datos.getDireccion());
+        usuario.setFechaNacimiento(datos.getFechaNacimiento());
 
-    Usuario actualizado = usuarioRepository.save(usuario);
+        Usuario actualizado = usuarioRepository.save(usuario);
 
-    return toUsuarioResponse(actualizado);
-}
-
+        return toUsuarioResponse(actualizado);
+    }
 
     // Eliminar usuario
     public void deleteById(Long id) {
