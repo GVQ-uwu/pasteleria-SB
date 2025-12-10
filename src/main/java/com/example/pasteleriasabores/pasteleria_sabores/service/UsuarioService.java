@@ -54,22 +54,32 @@ public class UsuarioService {
     // Registrar nuevo usuario - ELIMINAR DUPLICADO DE HASH (ya se hace en
     // controller)
     public UsuarioResponse register(Usuario usuario) {
+
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
         }
 
-        // Asegurar valores por defecto
-        if (usuario.getRol() == null) {
-            usuario.setRol("cliente");
-        }
-        if (usuario.getEstado() == null) {
-            usuario.setEstado("activo");
-        }
-        if (usuario.getFechaRegistro() == null) {
-            usuario.setFechaRegistro(LocalDateTime.now());
+        String rol = usuario.getRol();
+
+        // Si viene sin rol
+        if (rol == null || rol.trim().isEmpty()) {
+            usuario.setRol("");
+        } else {
+            // Si viene un rol → validar que sea uno permitido
+            if (!List.of("USER", "ADMIN", "TEST", "cliente", "admin")
+                    .contains(rol.toUpperCase())) {
+                throw new RuntimeException("Rol no válido: " + rol);
+            }
         }
 
-        // ✅ LA CONTRASEÑA YA VIENE HASHEDA DEL CONTROLLER
+        // Hash de la contraseña (por si no la trae hasheada desde el controller)
+        if (usuario.getPassword() != null) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
+
+        usuario.setFechaRegistro(LocalDateTime.now());
+        usuario.setEstado("activo");
+
         Usuario savedUser = usuarioRepository.save(usuario);
         return toUsuarioResponse(savedUser);
     }

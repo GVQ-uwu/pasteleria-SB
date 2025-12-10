@@ -44,20 +44,22 @@ public class SecurityConfig {
                         // ⭐ RUTAS PÚBLICAS (LOGIN Y REGISTER)
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // ⭐ RUTAS PÚBLICAS DE PRODUCTOS
-                        .requestMatchers("/api/productos/**").permitAll()
+                        // ⭐ ✅ CORREGIDO: RUTAS PÚBLICAS DE PRODUCTOS (solo lectura)
+                        .requestMatchers("/api/productos", "/api/productos/*", "/api/productos/categoria/*", 
+                                        "/api/productos/destacados", "/api/productos/ofertas").permitAll()
 
-                        // ⭐ RUTAS PÚBLICAS DE CATEGORÍAS
-                        .requestMatchers("/api/categorias/**").permitAll()
+                        // ⭐ ✅ CORREGIDO: RUTAS PÚBLICAS DE CATEGORÍAS (solo lectura)
+                        .requestMatchers("/api/categorias", "/api/categorias/*").permitAll()
 
-                        // ⭐ RUTAS PROTEGIDAS
-                        .requestMatchers("/api/usuarios/perfil/**").authenticated()
-                        .requestMatchers("/api/pedidos/perfil/**").authenticated()
+                        // ⭐ RUTAS PROTEGIDAS PARA USUARIOS AUTENTICADOS
+                        .requestMatchers("/api/usuarios/perfil", "/api/usuarios/perfil/**", "/api/usuarios/cambiar-password").authenticated()
                         .requestMatchers("/api/pedidos/mis-pedidos", "/api/pedidos/crear").authenticated()
 
-                        // ⭐ SOLO ADMIN
-                        .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/pedidos/todos", "/api/pedidos/*/estado").hasAuthority("ADMIN")
+                        // ⭐ ✅ CORREGIDO: RUTAS SOLO PARA ADMIN (soporte para ADMIN y admin)
+                        .requestMatchers("/api/usuarios", "/api/usuarios/**").hasAnyAuthority("ADMIN", "admin")
+                        .requestMatchers("/api/productos/**").hasAnyAuthority("ADMIN", "admin") // ✅ NUEVO: CRUD productos
+                        .requestMatchers("/api/categorias/**").hasAnyAuthority("ADMIN", "admin") // ✅ NUEVO: CRUD categorías
+                        .requestMatchers("/api/pedidos/todos", "/api/pedidos/*/estado").hasAnyAuthority("ADMIN", "admin")
 
                         // Swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

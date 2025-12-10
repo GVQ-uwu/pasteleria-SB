@@ -15,33 +15,49 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Usuario {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false, length = 100)
     private String nombre;
-    
+
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(nullable = false, length = 255)
     private String password;
-    
+
+    @Column(nullable = false, length = 20)
+    private String rol;
+
+    public void setEmail(String email) {
+        this.email = email;
+
+        if (email != null) {
+            String emailLower = email.toLowerCase();
+
+            if (emailLower.endsWith("@admin.com")) {
+                this.rol = "ADMIN";
+            } else if (emailLower.endsWith("@test.com")) {
+                this.rol = "TEST";
+            } else {
+                this.rol = "USER";
+            }
+        }
+    }
+
     @Column(length = 20)
     private String telefono;
-    
+
     @Column(columnDefinition = "TEXT")
     private String direccion;
-    
+
     @Column(name = "fecha_nacimiento")
     @JsonFormat(pattern = "dd-MM-yyyy")
     private String fechaNacimiento;
 
-    @Column(nullable = false, length = 20)
-    private String rol = "USER"; // ADMIN, USER, TEST
-    
     @Column(nullable = false, length = 20)
     private String estado = "activo";
 
